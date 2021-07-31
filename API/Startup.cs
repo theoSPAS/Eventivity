@@ -1,26 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Microsoft.EntityFrameworkCore.SqlServer;
-using Persistence;
-using Microsoft.EntityFrameworkCore;
-using MediatR;
 using Application.Activities;
-using AutoMapper;
-using Application.Core;
 using API.Extensions;
 using FluentValidation.AspNetCore;
 using API.Middleware;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace API
 {
@@ -36,12 +24,19 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers().AddFluentValidation(config => 
+            services.AddControllers(opt => {
+                var policy = new AuthorizationPolicyBuilder()
+                 .RequireAuthenticatedUser().Build();
+
+                 opt.Filters.Add(new AuthorizeFilter(policy));
+            }).AddFluentValidation(config => 
             {
                 config.RegisterValidatorsFromAssemblyContaining<Create>();
             });
             
             services.AddApplicationServices(_config);
+
+            services.AddIdentityServices(_config);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +55,8 @@ namespace API
             app.UseRouting();
 
             app.UseCors("CorsPolicy");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
