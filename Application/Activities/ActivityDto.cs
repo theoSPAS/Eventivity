@@ -20,7 +20,7 @@ namespace Application.Activities
 
         public string Venue { get; set; }
 
-        public string HostUserName { get; set; }
+        public string HostUsername { get; set; }
 
         public bool IsCancelled { get; set; }
 
